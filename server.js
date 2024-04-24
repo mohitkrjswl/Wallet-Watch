@@ -21,10 +21,11 @@ app.use(cors())
 
 
 // Routes
-app.get('/', (req, res) => {
-  res.send('Hello World')
-})
+// user routes
 
+app.use('/api/v1/users', require('./routes/userRoute'))
+// transaction routes
+app.use('/api/v1/transactions', require('./routes/transactionsRoute'))
 // port
 
 const PORT = 8080 || process.env.PORT;
