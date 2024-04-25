@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { Modal, Form, Input, Select, message, Table, DatePicker } from 'antd'
-import { UnorderedListOutlined, AreaChartOutlined } from '@ant-design/icons'
+import { UnorderedListOutlined, AreaChartOutlined, EditOutlined, DeleteTwoTone } from '@ant-design/icons'
 import Layout from '../components/Layout/Layout'
 import axios from 'axios'
 import moment from 'moment'
 import Spinner from '../components/Spinner'
+import Analytics from '../components/Analytics'
 const { RangePicker } = DatePicker;
 
 const HomePage = () => {
@@ -15,6 +16,7 @@ const HomePage = () => {
   const [selectedDate, setSelectedDate] = useState([])
   const [type, setType] = useState('all')
   const [viewData, setViewData] = useState('table')
+  const [edit, setEdit] = useState(null)
 
   // table data
   const columns = [
@@ -42,7 +44,16 @@ const HomePage = () => {
       dataIndex: 'reference'
     },
     {
-      title: 'Actions'
+      title: 'Actions',
+      render: (text, record) => (
+        <div>
+          <EditOutlined onClick={() => {
+            setEdit(record)
+            setShowModal(true)
+          }} />
+          <DeleteTwoTone className='mx-3' />
+        </div>
+      )
     }
   ]
 
@@ -71,10 +82,23 @@ const HomePage = () => {
     try {
       const user = JSON.parse(localStorage.getItem('user'))
       setLoading(true)
-      await axios.post('/transactions/addtransaction', { ...values, userid: user._id })
-      setLoading(false)
-      message.success('Transaction added successfully')
+      if (edit) {
+        await axios.post('/transactions/edittransaction', {
+          payload: {
+            ...values,
+            userid: user._id,
+          },
+          transactionId: edit._id,
+        })
+        setLoading(false)
+        message.success('Transaction updated successfully')
+      } else {
+        await axios.post('/transactions/addtransaction', { ...values, userid: user._id })
+        setLoading(false)
+        message.success('Transaction added successfully')
+      }
       setShowModal(false)
+      setEdit(null)
 
     } catch (error) {
       setLoading(false)
@@ -108,19 +132,20 @@ const HomePage = () => {
           {frequency === 'custom' && (<RangePicker value={selectedDate} onChange={(values) => setSelectedDate(values)} />)}
 
         </div>
-        <div className='mx-2'>
-          <UnorderedListOutlined className='mx-2' />
-          <AreaChartOutlined className='mx-2' />
+        <div className='switch-icons'>
+          <UnorderedListOutlined className={`mx-2 ${viewData === 'table' ? 'active-icon' : 'inactive-icon'}`} onClick={() => setViewData('table')} />
+          <AreaChartOutlined className={`mx-2 ${viewData === 'analytics' ? 'active-icon' : 'inactive-icon'}`} onClick={() => setViewData('analytics')} />
         </div>
         <div>
           <button className='btn btn-primary' onClick={() => setShowModal(true)}>Add New</button>
         </div>
       </div>
       <div className='content'>
-        <Table columns={columns} dataSource={allTransaction} />
+        {viewData === 'table' ? <Table columns={columns} dataSource={allTransaction} /> : <Analytics allTransaction={allTransaction} />}
+
       </div>
-      <Modal title='Add Transaction' open={showModal} onCancel={() => setShowModal(false)} footer={false}>
-        <Form layout='vertical' onFinish={handleSubmit}>
+      <Modal title={edit ? 'Edit Transaction' : 'Add Transaction'} open={showModal} onCancel={() => setShowModal(false)} footer={false}>
+        <Form layout='vertical' onFinish={handleSubmit} initialValues={edit}>
           <Form.Item label='Amount' name="amount">
             <Input type='text' />
           </Form.Item>
@@ -128,12 +153,11 @@ const HomePage = () => {
             <Select>
               <Select.Option value='income'>Income</Select.Option>
               <Select.Option value='expense'>Expense</Select.Option>
-              <Select.Option value='other'>Other</Select.Option>
             </Select>
           </Form.Item>
           <Form.Item label='Category' name="category">
             <Select>
-              <Select.Option value='Business'>Business</Select.Option>
+              <Select.Option value='business'>Business</Select.Option>
               <Select.Option value='salary'>Salary</Select.Option>
               <Select.Option value='bills'>Bills</Select.Option>
               <Select.Option value='personal'>personal</Select.Option>
