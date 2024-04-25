@@ -4,8 +4,8 @@ const { addTransaction, getAllTransaction } = require('../controllers/transactio
 // router object
 const router = express.Router()
 
-router.post('/add-transaction', addTransaction)
-router.get('/get-transaction', getAllTransaction)
+router.post('/addtransaction', addTransaction)
+router.post('/gettransaction', getAllTransaction)
 
 
-module.exports = router
+module.exports = router;
