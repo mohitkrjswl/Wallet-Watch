@@ -1,15 +1,18 @@
-import React from 'react'
+import React from 'react';
+import { css } from '@emotion/react';
+import { PropagateLoader } from 'react-spinners';
 
 const Spinner = () => {
+  const override = css`
+    display: block;
+    margin: 0 auto;
+  `;
+
   return (
-    <>
-      <div className="spinner-border" style={{ width: '3rem', height: '3rem' }} role="status">
-        <span className="visually-hidden">Loading...</span>
-      </div>
-
-
-    </>
-  )
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <PropagateLoader color="#007bff" css={override} size={15} />
+    </div>
+  );
 }
 
-export default Spinner
+export default Spinner;

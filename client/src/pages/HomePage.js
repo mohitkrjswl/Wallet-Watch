@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Modal, Form, Input, Select, message, Table, DatePicker } from 'antd'
-import { UnorderedListOutlined, AreaChartOutlined, EditOutlined, DeleteTwoTone } from '@ant-design/icons'
+import { EditOutlined, DeleteTwoTone } from '@ant-design/icons'
 import Layout from '../components/Layout/Layout'
 import axios from 'axios'
 import moment from 'moment'
@@ -51,7 +51,7 @@ const HomePage = () => {
             setEdit(record)
             setShowModal(true)
           }} />
-          <DeleteTwoTone className='mx-3' />
+          <DeleteTwoTone className='mx-3' onClick={() => { handleDelete(record) }} />
         </div>
       )
     }
@@ -76,6 +76,22 @@ const HomePage = () => {
     }
     getAllTransactions();
   }, [frequency, selectedDate, type]);
+
+  // delete handler
+  const handleDelete = async (record) => {
+    try {
+      setLoading(true)
+      await axios.post('/transactions/deletetransaction', { transactionId: record._id })
+      setLoading(false)
+      message.success('Transaction deleted successfully')
+    } catch (error) {
+      setLoading(false);
+      console.log(error);
+      message.error('Unable to delete!');
+    }
+  }
+
+
 
   // form handling 
   const handleSubmit = async (values) => {
@@ -123,7 +139,7 @@ const HomePage = () => {
           {frequency === 'custom' && (<RangePicker value={selectedDate} onChange={(values) => setSelectedDate(values)} />)}
 
         </div>
-        <div><h6>Select Type</h6>
+        <div className='filter-tab'><h6 className='text-center'>Select Type</h6>
           <Select value={type} onChange={(values) => setType(values)}>
             <Select.Option value="all">All</Select.Option>
             <Select.Option value="income">Income</Select.Option>
@@ -133,8 +149,18 @@ const HomePage = () => {
 
         </div>
         <div className='switch-icons'>
-          <UnorderedListOutlined className={`mx-2 ${viewData === 'table' ? 'active-icon' : 'inactive-icon'}`} onClick={() => setViewData('table')} />
-          <AreaChartOutlined className={`mx-2 ${viewData === 'analytics' ? 'active-icon' : 'inactive-icon'}`} onClick={() => setViewData('analytics')} />
+          <lord-icon
+            src="https://cdn.lordicon.com/xljvqlng.json"
+            trigger="hover" className={`mx-2 ${viewData === 'table' ? 'active-icon' : 'inactive-icon'}`} onClick={() => setViewData('table')}>
+          </lord-icon>
+
+
+          <lord-icon
+            src="https://cdn.lordicon.com/zsaomnmb.json"
+            trigger="hover"
+            state="loop-all"
+            colors="primary:#3080e8,secondary:#3080e8,tertiary:#3080e8,quaternary:#3a3347" className={`mx-2 ${viewData === 'analytics' ? 'active-icon' : 'inactive-icon'}`} onClick={() => setViewData('analytics')}>
+          </lord-icon>
         </div>
         <div>
           <button className='btn btn-primary' onClick={() => setShowModal(true)}>Add New</button>

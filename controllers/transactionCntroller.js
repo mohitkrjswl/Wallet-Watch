@@ -1,5 +1,7 @@
 const transactionModel = require('../models/transactionModel')
 const moment = require('moment')
+
+
 const getAllTransaction = async (req, res) => {
   try {
     const { frequency, selectedDate, type } = req.body
@@ -46,4 +48,16 @@ const addTransaction = async (req, res) => {
     res.status(500).json(error)
   }
 }
-module.exports = { getAllTransaction, addTransaction }
+const deleteTransaction = async (req, res) => {
+  try {
+    await transactionModel.findOneAndDelete({ _id: req.body.transactionId })
+    res.status(200).json('Transaction deleted successfully')
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error)
+  }
+}
+
+
+module.exports = { getAllTransaction, addTransaction, editTransaction, deleteTransaction }
