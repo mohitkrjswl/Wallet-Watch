@@ -7,6 +7,7 @@ import moment from 'moment';
 import Spinner from '../components/Spinner';
 import Analytics from '../components/Analytics';
 const { RangePicker } = DatePicker;
+// import HomeBg from 'client\public\Home.png'
 
 const HomePage = () => {
   const [showModal, setShowModal] = useState(false);
