@@ -5,9 +5,9 @@
   align-items: center;
   justify-content: center;
   box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  
 }
-.login-page h1 {
-}
+
 .login-form {
   background-color: #b9bcccb6;
   margin-left: -15px;
@@ -39,4 +39,7 @@
 
 .login-form a:hover {
   color: black !important;
+}
+.row .container{
+  padding: 10px;
 }

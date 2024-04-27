@@ -1,22 +1,22 @@
-import React, { useState, useEffect } from 'react'
-import { Modal, Form, Input, Select, message, Table, DatePicker } from 'antd'
-import { EditOutlined, DeleteTwoTone } from '@ant-design/icons'
-import Layout from '../components/Layout/Layout'
-import axios from 'axios'
-import moment from 'moment'
-import Spinner from '../components/Spinner'
-import Analytics from '../components/Analytics'
+import React, { useState, useEffect } from 'react';
+import { Modal, Form, Input, Select, message, Table, DatePicker } from 'antd';
+import { EditOutlined, DeleteTwoTone } from '@ant-design/icons';
+import Layout from '../components/Layout/Layout';
+import axios from 'axios';
+import moment from 'moment';
+import Spinner from '../components/Spinner';
+import Analytics from '../components/Analytics';
 const { RangePicker } = DatePicker;
 
 const HomePage = () => {
-  const [showModal, setShowModal] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [allTransaction, setAllTransaction] = useState([])
-  const [frequency, setFrequency] = useState('7')
-  const [selectedDate, setSelectedDate] = useState([])
-  const [type, setType] = useState('all')
-  const [viewData, setViewData] = useState('table')
-  const [edit, setEdit] = useState(null)
+  const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [allTransaction, setAllTransaction] = useState([]);
+  const [frequency, setFrequency] = useState('7');
+  const [selectedDate, setSelectedDate] = useState([]);
+  const [type, setType] = useState('all');
+  const [viewData, setViewData] = useState('table');
+  const [edit, setEdit] = useState(null);
 
   // table data
   const columns = [
@@ -55,49 +55,48 @@ const HomePage = () => {
         </div>
       )
     }
-  ]
+  ];
 
-
-
-  //  useEffect hook 
-  useEffect(() => {
-    const getAllTransactions = async () => {
-      try {
-        const user = JSON.parse(localStorage.getItem('user'))
-        setLoading(true)
-        const res = await axios.post('/transactions/gettransaction', { userid: user._id, frequency, selectedDate, type, });
-        setLoading(false)
-        setAllTransaction(res.data)
-        console.log(res.data);
-      } catch (error) {
-        console.log(error);
-        message.error('Fetch issue with transaction')
-      }
+  // Function to fetch transactions
+  const fetchTransactions = async () => {
+    try {
+      const user = JSON.parse(localStorage.getItem('user'));
+      setLoading(true);
+      const res = await axios.post('/transactions/gettransaction', { userid: user._id, frequency, selectedDate, type });
+      setAllTransaction(res.data);
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+      message.error('Fetch issue with transaction');
+      setLoading(false);
     }
-    getAllTransactions();
+  };
+
+  // Use effect to fetch transactions on initial load and when dependencies change
+  useEffect(() => {
+    fetchTransactions();
   }, [frequency, selectedDate, type]);
 
-  // delete handler
+  // Function to handle delete transaction
   const handleDelete = async (record) => {
     try {
-      setLoading(true)
-      await axios.post('/transactions/deletetransaction', { transactionId: record._id })
-      setLoading(false)
-      message.success('Transaction deleted successfully')
+      setLoading(true);
+      await axios.post('/transactions/deletetransaction', { transactionId: record._id });
+      message.success('Transaction deleted successfully');
+      fetchTransactions(); // Fetch transactions after delete
     } catch (error) {
-      setLoading(false);
       console.log(error);
       message.error('Unable to delete!');
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
-
-
-  // form handling 
+  // Function to handle form submission
   const handleSubmit = async (values) => {
     try {
-      const user = JSON.parse(localStorage.getItem('user'))
-      setLoading(true)
+      setLoading(true);
+      const user = JSON.parse(localStorage.getItem('user'));
       if (edit) {
         await axios.post('/transactions/edittransaction', {
           payload: {
@@ -105,24 +104,22 @@ const HomePage = () => {
             userid: user._id,
           },
           transactionId: edit._id,
-        })
-        setLoading(false)
-        message.success('Transaction updated successfully')
+        });
+        message.success('Transaction updated successfully');
       } else {
-        await axios.post('/transactions/addtransaction', { ...values, userid: user._id })
-        setLoading(false)
-        message.success('Transaction added successfully')
+        await axios.post('/transactions/addtransaction', { ...values, userid: user._id });
+        message.success('Transaction added successfully');
       }
-      setShowModal(false)
-      setEdit(null)
-
+      setShowModal(false);
+      setEdit(null);
+      fetchTransactions(); // Fetch transactions after add or update
     } catch (error) {
-      setLoading(false)
-      message.error('Something went wrong')
-
+      console.log(error);
+      message.error('Something went wrong');
+    } finally {
+      setLoading(false);
     }
   };
-
 
   return (
     <Layout>
@@ -137,7 +134,6 @@ const HomePage = () => {
             <Select.Option value="custom">Custom</Select.Option>
           </Select>
           {frequency === 'custom' && (<RangePicker value={selectedDate} onChange={(values) => setSelectedDate(values)} />)}
-
         </div>
         <div className='filter-tab'><h6 className='text-center'>Select Type</h6>
           <Select value={type} onChange={(values) => setType(values)}>
@@ -146,15 +142,12 @@ const HomePage = () => {
             <Select.Option value="expense">Expense</Select.Option>
           </Select>
           {frequency === 'custom' && (<RangePicker value={selectedDate} onChange={(values) => setSelectedDate(values)} />)}
-
         </div>
         <div className='switch-icons'>
           <lord-icon
             src="https://cdn.lordicon.com/xljvqlng.json"
             trigger="hover" className={`mx-2 ${viewData === 'table' ? 'active-icon' : 'inactive-icon'}`} onClick={() => setViewData('table')}>
           </lord-icon>
-
-
           <lord-icon
             src="https://cdn.lordicon.com/zsaomnmb.json"
             trigger="hover"
@@ -166,9 +159,8 @@ const HomePage = () => {
           <button className='btn btn-primary' onClick={() => setShowModal(true)}>Add New</button>
         </div>
       </div>
-      <div className='content'>
+      <div className='content' style={{ margin: '20px auto', maxWidth: '80%' }}>
         {viewData === 'table' ? <Table columns={columns} dataSource={allTransaction} /> : <Analytics allTransaction={allTransaction} />}
-
       </div>
       <Modal title={edit ? 'Edit Transaction' : 'Add Transaction'} open={showModal} onCancel={() => setShowModal(false)} footer={false}>
         <Form layout='vertical' onFinish={handleSubmit} initialValues={edit}>
@@ -200,14 +192,12 @@ const HomePage = () => {
             <Input type='date' />
           </Form.Item>
           <div className='d-flex justify-content-end'>
-            {/* <button className='btn btn-danger'>Cancel</button> */}
             <button type='submit' className='btn btn-primary'>{" "}Save</button>
           </div>
         </Form>
       </Modal>
-    </Layout >
+    </Layout>
   )
 }
-
 
 export default HomePage;

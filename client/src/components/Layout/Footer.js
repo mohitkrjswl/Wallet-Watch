@@ -1,11 +1,12 @@
-import React from 'react'
+import React from 'react';
+import '../../styles/Footer.css'; // Import your CSS file for footer styles
 
 const Footer = () => {
   return (
-    <div className='bg-dark text-light p-3'>
-      <h6 className='text-center'> All rights reserved &copy; Mohit kumar Jaiswal</h6>
+    <div className='footer'>
+      <h6 className='text-center'>All rights reserved &copy; Mohit kumar Jaiswal</h6>
     </div>
-  )
+  );
 }
 
-export default Footer
+export default Footer;
