@@ -5,7 +5,6 @@
   align-items: center;
   justify-content: center;
   box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
-  
 }
 
 .login-form {
@@ -40,6 +39,6 @@
 .login-form a:hover {
   color: black !important;
 }
-.row .container{
+.row .container {
   padding: 10px;
 }

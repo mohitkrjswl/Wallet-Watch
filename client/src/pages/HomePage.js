@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Modal, Form, Input, Select, message, Table, DatePicker } from 'antd';
 import { EditOutlined, DeleteTwoTone } from '@ant-design/icons';
 import Layout from '../components/Layout/Layout';
@@ -6,8 +6,8 @@ import axios from 'axios';
 import moment from 'moment';
 import Spinner from '../components/Spinner';
 import Analytics from '../components/Analytics';
+
 const { RangePicker } = DatePicker;
-// import HomeBg from 'client\public\Home.png'
 
 const HomePage = () => {
   const [showModal, setShowModal] = useState(false);
@@ -19,64 +19,28 @@ const HomePage = () => {
   const [viewData, setViewData] = useState('table');
   const [edit, setEdit] = useState(null);
 
-  // table data
-  const columns = [
-    {
-      title: 'Date',
-      dataIndex: 'date',
-      render: (text) => <span>{moment(text).format('YYYY-MM-DD')}</span>
-    },
-    {
-      title: 'Amount',
-      dataIndex: 'amount',
-
-    },
-    {
-      title: 'Type',
-      dataIndex: 'type',
-    },
-    {
-      title: 'Category',
-      dataIndex: 'category',
-
-    },
-    {
-      title: 'Reference',
-      dataIndex: 'reference'
-    },
-    {
-      title: 'Actions',
-      render: (text, record) => (
-        <div>
-          <EditOutlined onClick={() => {
-            setEdit(record)
-            setShowModal(true)
-          }} />
-          <DeleteTwoTone className='mx-3' onClick={() => { handleDelete(record) }} />
-        </div>
-      )
-    }
-  ];
-
   // Function to fetch transactions
-  const fetchTransactions = async () => {
+  const getAllTransactions = useCallback(async () => {
     try {
-      const user = JSON.parse(localStorage.getItem('user'));
+      const user = JSON.parse(localStorage.getItem("user"));
       setLoading(true);
-      const res = await axios.post('/transactions/gettransaction', { userid: user._id, frequency, selectedDate, type });
+      const res = await axios.post("/transactions/gettransaction", {
+        userid: user._id,
+        frequency,
+        selectedDate,
+        type,
+      });
       setAllTransaction(res.data);
       setLoading(false);
     } catch (error) {
-      console.log(error);
-      message.error('Fetch issue with transaction');
-      setLoading(false);
+      message.error("Fetch Issue With Transaction");
     }
-  };
-
-  // Use effect to fetch transactions on initial load and when dependencies change
-  useEffect(() => {
-    fetchTransactions();
   }, [frequency, selectedDate, type]);
+
+  // useEffect Hook to fetch transactions on dependency change
+  useEffect(() => {
+    getAllTransactions();
+  }, [frequency, selectedDate, type, getAllTransactions]);
 
   // Function to handle delete transaction
   const handleDelete = async (record) => {
@@ -84,7 +48,7 @@ const HomePage = () => {
       setLoading(true);
       await axios.post('/transactions/deletetransaction', { transactionId: record._id });
       message.success('Transaction deleted successfully');
-      fetchTransactions(); // Fetch transactions after delete
+      getAllTransactions(); // Fetch transactions after delete
     } catch (error) {
       console.log(error);
       message.error('Unable to delete!');
@@ -113,7 +77,7 @@ const HomePage = () => {
       }
       setShowModal(false);
       setEdit(null);
-      fetchTransactions(); // Fetch transactions after add or update
+      getAllTransactions(); // Fetch transactions after add or update
     } catch (error) {
       console.log(error);
       message.error('Something went wrong');
@@ -122,11 +86,49 @@ const HomePage = () => {
     }
   };
 
+  // table data
+  const columns = [
+    {
+      title: 'Date',
+      dataIndex: 'date',
+      render: (text) => <span>{moment(text).format('YYYY-MM-DD')}</span>
+    },
+    {
+      title: 'Amount',
+      dataIndex: 'amount',
+    },
+    {
+      title: 'Type',
+      dataIndex: 'type',
+    },
+    {
+      title: 'Category',
+      dataIndex: 'category',
+    },
+    {
+      title: 'Reference',
+      dataIndex: 'reference'
+    },
+    {
+      title: 'Actions',
+      render: (text, record) => (
+        <div>
+          <EditOutlined onClick={() => {
+            setEdit(record);
+            setShowModal(true);
+          }} />
+          <DeleteTwoTone className='mx-3' onClick={() => handleDelete(record)} />
+        </div>
+      )
+    }
+  ];
+
   return (
     <Layout>
       {loading && <Spinner />}
       <div className='filters'>
-        <div><h6>Select Frequency</h6>
+        <div>
+          <h6>Select Frequency</h6>
           <Select value={frequency} onChange={(values) => setFrequency(values)}>
             <Select.Option value="7">Last 1 week</Select.Option>
             <Select.Option value="30">Last 1 month</Select.Option>
@@ -136,13 +138,13 @@ const HomePage = () => {
           </Select>
           {frequency === 'custom' && (<RangePicker value={selectedDate} onChange={(values) => setSelectedDate(values)} />)}
         </div>
-        <div className='filter-tab'><h6 className='text-center'>Select Type</h6>
+        <div className='filter-tab'>
+          <h6 className='text-center'>Select Type</h6>
           <Select value={type} onChange={(values) => setType(values)}>
             <Select.Option value="all">All</Select.Option>
             <Select.Option value="income">Income</Select.Option>
             <Select.Option value="expense">Expense</Select.Option>
           </Select>
-          {frequency === 'custom' && (<RangePicker value={selectedDate} onChange={(values) => setSelectedDate(values)} />)}
         </div>
         <div className='switch-icons'>
           <lord-icon
@@ -179,7 +181,7 @@ const HomePage = () => {
               <Select.Option value='business'>Business</Select.Option>
               <Select.Option value='salary'>Salary</Select.Option>
               <Select.Option value='bills'>Bills</Select.Option>
-              <Select.Option value='personal'>personal</Select.Option>
+              <Select.Option value='personal'>Personal</Select.Option>
               <Select.Option value='fee'>Fee</Select.Option>
             </Select>
           </Form.Item>
@@ -193,12 +195,12 @@ const HomePage = () => {
             <Input type='date' />
           </Form.Item>
           <div className='d-flex justify-content-end'>
-            <button type='submit' className='btn btn-primary'>{" "}Save</button>
+            <button type='submit' className='btn btn-primary'>Save</button>
           </div>
         </Form>
       </Modal>
     </Layout>
-  )
+  );
 }
 
 export default HomePage;
